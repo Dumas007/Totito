@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Totito Dumas</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #e3f2fd;
+            margin: 0;
+            text-align: center;
+        }
+
+        h1 {
+            color: #0d47a1;
+            margin-bottom: 20px;
+        }
+
+        #juego {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .casilla {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100px;
+            height: 100px;
+            background-color: #ffffff;
+            border: 3px solid #0d47a1;
+            border-radius: 10px;
+            font-size: 3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .casilla:hover {
+            background-color: #bbdefb;
+            transform: scale(1.05);
+        }
+
+        .ganador {
+            background-color: #4caf50;
+            animation: animacionVictoria 1s infinite;
+        }
+
+        .perdedor {
+            background-color: #f44336;
+            animation: animacionDerrota 1s infinite;
+        }
+
+        @keyframes animacionVictoria {
+            0% { background-color: #4caf50; }
+            50% { background-color: #81c784; }
+            100% { background-color: #4caf50; }
+        }
+
+        @keyframes animacionDerrota {
+            0% { background-color: #f44336; }
+            50% { background-color: #e57373; }
+            100% { background-color: #f44336; }
+        }
+
+        #resultado {
+            font-size: 1.5rem;
+            color: #0d47a1;
+            margin-top: 20px;
+        }
+
+        #botonReiniciar {
+            background-color: #0d47a1;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s, transform 0.2s;
+            display: none;
+        }
+
+        #botonReiniciar:hover {
+            background-color: #1976d2;
+            transform: scale(1.05);
+        }
+
+        .oculto {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<h1>TOTITO (Erick Dumas)</h1>
+<div id="juego">
+    <div class="casilla" data-indice="0"></div>
+    <div class="casilla" data-indice="1"></div>
+    <div class="casilla" data-indice="2"></div>
+    <div class="casilla" data-indice="3"></div>
+    <div class="casilla" data-indice="4"></div>
+    <div class="casilla" data-indice="5"></div>
+    <div class="casilla" data-indice="6"></div>
+    <div class="casilla" data-indice="7"></div>
+    <div class="casilla" data-indice="8"></div>
+</div>
+
+<h2 id="resultado" class="oculto"></h2>
+<button id="botonReiniciar" class="oculto">Reiniciar Juego</button>
+
+<script>
+    const celdas = document.querySelectorAll('.casilla');
+    const resultado = document.getElementById('resultado');
+    const botonReiniciar = document.getElementById('botonReiniciar');
+    let jugadorActual = 'X';
+    let finDelJuego = false;
+    let tablero = ['', '', '', '', '', '', '', '', ''];
+
+    // Combinaciones ganadoras
+    const combinacionesGanadoras = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+    ];
+
+    // Manejar el click en una casilla
+    function manejarClickCasilla(event) {
+        const indice = event.target.dataset.indice;
+
+        if (tablero[indice] === '' && !finDelJuego) {
+            tablero[indice] = jugadorActual;
+            event.target.textContent = jugadorActual;
+            verificarGanador();
+            jugadorActual = jugadorActual === 'X' ? 'O' : 'X';
+        }
+    }
+
+    // Verificar si hay un ganador o empate
+    function verificarGanador() {
+        for (let combo of combinacionesGanadoras) {
+            const [a, b, c] = combo;
+            if (tablero[a] && tablero[a] === tablero[b] && tablero[a] === tablero[c]) {
+                resaltarCeldas([a, b, c], 'ganador');
+                mostrarResultado(`¡Jugador ${tablero[a]} gana!`);
+                finDelJuego = true;
+                return;
+            }
+        }
+
+        if (!tablero.includes('')) {
+            mostrarResultado('¡Empate!');
+            finDelJuego = true;
+        }
+    }
+
+    // Mostrar el resultado y animaciones
+    function mostrarResultado(mensaje) {
+        resultado.textContent = mensaje;
+        resultado.classList.remove('oculto');
+        botonReiniciar.classList.remove('oculto');
+    }
+
+    // Resaltar celdas ganadoras
+    function resaltarCeldas(indices, clase) {
+        indices.forEach(index => {
+            celdas[index].classList.add(clase);
+        });
+    }
+
+    // Reiniciar el juego
+    function reiniciarJuego() {
+        tablero = ['', '', '', '', '', '', '', '', ''];
+        celdas.forEach(celda => {
+            celda.textContent = '';
+            celda.classList.remove('ganador', 'perdedor');
+        });
+        resultado.classList.add('oculto');
+        botonReiniciar.classList.add('oculto');
+        finDelJuego = false;
+        jugadorActual = 'X';
+    }
+
+    // Añadir eventos a las celdas
+    celdas.forEach(celda => {
+        celda.addEventListener('click', manejarClickCasilla);
+    });
+
+    // Añadir evento al botón de reinicio
+    botonReiniciar.addEventListener('click', reiniciarJuego);
+</script>
+
+</body>
+</html>
